@@ -10,14 +10,12 @@ Specifically, the following fields are required, and will likely be populated in
 ```json
 {
   "coreServer": "http://bitcoind:8332",
-  "coreDataDir": "/home/bitcoin/.bitcoin",
+"coreAuthType": "USERPASS",
   "coreAuth": "bitcoin:password",
   "startIndexing": true,
   "backendElectrumServer": "tcp://fulcrum:50001"
 }
 ```
-
-In addition, you will need to map the `bitcoind` data directory into the container as well.
 
 ## Credit
 

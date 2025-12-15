@@ -10,12 +10,14 @@ Specifically, the following fields are required, and will likely be populated in
 ```json
 {
   "coreServer": "http://bitcoind:8332",
-"coreAuthType": "USERPASS",
+  "coreAuthType": "USERPASS",
   "coreAuth": "bitcoin:password",
   "startIndexing": true,
   "backendElectrumServer": "tcp://fulcrum:50001"
 }
 ```
+
+Lastly, ensure that the data directory you specify has proper R/W permissions for the default UID/GID of `1001`.
 
 ## Credit
 

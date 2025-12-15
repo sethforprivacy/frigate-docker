@@ -1,7 +1,7 @@
 # Define Ubuntu LTS as base image
 FROM ubuntu:latest
 
-# Set Sparrow version and expected PGP signature
+# Set Frigate version and expected PGP signature
 ARG FRIGATE_VERSION=1.3.2
 ARG PGP_SIG=E94618334C674B40
 
@@ -39,12 +39,16 @@ RUN case ${TARGETARCH:-amd64} in \
     && tar xf frigate-${FRIGATE_VERSION}-${FRIGATE_ARCH}.tar.gz -C /opt \
     && rm -rf /tmp/*
 
-# Add user and setup directories for Sparrow
+# Add user and setup directories for Frigate
+# Note that the default UID and GID are 1001
 RUN useradd -ms /bin/bash frigate
 USER frigate
 
 # Switch to home directory
 WORKDIR /home/frigate
+
+# Expose default TCP port
+EXPOSE 57001
 
 # Run Frigate
 CMD ["/opt/frigate/bin/frigate"]

@@ -54,4 +54,4 @@ WORKDIR /frigate
 EXPOSE 57001
 
 # Run Frigate
-CMD ["/opt/frigate/bin/frigate"]
+CMD ["/opt/frigate/bin/frigate", "--dir /frigate/.frigate"]

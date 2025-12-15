@@ -39,13 +39,15 @@ RUN case ${TARGETARCH:-amd64} in \
     && tar xf frigate-${FRIGATE_VERSION}-${FRIGATE_ARCH}.tar.gz -C /opt \
     && rm -rf /tmp/*
 
-# Add user and setup directories for Frigate
-# Note that the default UID and GID are 1001
-RUN useradd -ms /bin/bash frigate
-USER frigate
+# Setup frigate user and group with static IDs
+ARG GROUP_ID=1000
+ARG USER_ID=1000
+RUN userdel ubuntu \
+    && groupadd -g ${GROUP_ID} frigate \
+    && useradd -u ${USER_ID} -g frigate -d /frigate frigate
 
 # Switch to home directory
-WORKDIR /home/frigate
+WORKDIR /frigate
 
 # Expose default TCP port
 EXPOSE 57001

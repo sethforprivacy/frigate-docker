@@ -45,6 +45,7 @@ ARG USER_ID=1000
 RUN userdel ubuntu \
     && groupadd -g ${GROUP_ID} frigate \
     && useradd -u ${USER_ID} -g frigate -d /frigate frigate
+USER frigate
 
 # Switch to home directory
 WORKDIR /frigate

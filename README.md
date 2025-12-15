@@ -3,7 +3,7 @@ A simple Docker container for Frigate, a Silent Payment server.
 
 ## Running this image
 
-In order to run this image, you will need to pass a config file at `~/.frigate/config`, with the format and necessary fields as mentioned in the [official readme](https://github.com/sparrowwallet/frigate#configuration).
+In order to run this image, you will need to pass a config file at `/frigate/.frigate/config`, with the format and necessary fields as mentioned in the [official readme](https://github.com/sparrowwallet/frigate#configuration).
 
 Specifically, the following fields are required, and will likely be populated in a similar way to the below example config file:
 

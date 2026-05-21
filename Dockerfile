@@ -2,7 +2,7 @@
 FROM ubuntu:latest
 
 # Set Frigate version and expected PGP signature
-ARG FRIGATE_VERSION=1.5.1
+ARG FRIGATE_VERSION=1.5.2
 ARG PGP_SIG=E94618334C674B40
 
 # Update all packages and install requirements

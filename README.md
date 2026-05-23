@@ -143,6 +143,7 @@ Your `RENDER_GID` is `109`.
 Requirements:
 - `/dev/dri` available
 - OpenCL working on host (`clinfo` shows GPU)
+- On Linux, the ocl-icd-libopencl1 ICD loader is required
 - For more intel details, see the [Enabling Intel iGPU on Linux](https://github.com/sparrowwallet/frigate#enabling-intel-igpu-on-linux)
 
 ```yaml
@@ -201,7 +202,9 @@ docker compose run --gpus all
 ### 🟢 AMD GPU (ROCm / OpenCL)
 
 Requirements:
-- [ROCm or AMD OpenCL runtime installed on host](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html)
+- OpenCL working on host (`clinfo` shows GPU)
+- Requires ROCm or AMDGPU-PRO OpenCL runtime
+- On Linux, the ocl-icd-libopencl1 ICD loader is required
 - User running the container must be in the 'render' and 'video' groups
 
 ```yaml

@@ -93,6 +93,7 @@ Frigate supports:
 - NVIDIA (CUDA)
 - Intel (OpenCL)
 - AMD (OpenCL via ROCm)
+- For more details, see the [Official Frigate README](https://github.com/sparrowwallet/frigate#gpu-requirements)
 
 Set in config:
 
@@ -142,6 +143,7 @@ Your `RENDER_GID` is `109`.
 Requirements:
 - `/dev/dri` available
 - OpenCL working on host (`clinfo` shows GPU)
+- For more intel details, see the [Enabling Intel iGPU on Linux](https://github.com/sparrowwallet/frigate#enabling-intel-igpu-on-linux)
 
 ```yaml
 services:

@@ -199,7 +199,7 @@ docker compose run --gpus all
 ### 🟢 AMD GPU (ROCm / OpenCL)
 
 Requirements:
-- [ROCm or AMD OpenCL runtime installed on host]((https://rocm.docs.amd.com/en/latest/deploy/linux/index.html))
+- [ROCm or AMD OpenCL runtime installed on host](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html)
 - User running the container must be in the 'render' and 'video' groups
 
 ```yaml

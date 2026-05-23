@@ -1,57 +1,82 @@
-# Define Ubuntu LTS as base image
-FROM ubuntu:latest
+# ---------- Builder stage ----------
+FROM debian:trixie-slim AS builder
 
-# Set Frigate version and expected PGP signature
+ARG TARGETPLATFORM
 ARG FRIGATE_VERSION=1.5.2
-ARG PGP_SIG=E94618334C674B40
+ARG FRIGATE_PGP_SIG=E94618334C674B40
 
-# Update all packages and install requirements
-RUN apt-get update \
-    && apt-get upgrade -y
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends curl \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     gnupg \
     wget \
-    ca-certificates \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Switch to /tmp for verification and install
 WORKDIR /tmp
 
-# Detect and set architecture to properly download binaries
-ARG TARGETARCH
-RUN case ${TARGETARCH:-amd64} in \
-    "arm64") FRIGATE_ARCH="aarch64";; \
-    "amd64") FRIGATE_ARCH="x86_64";; \
-    *) echo "Dockerfile does not support this platform"; exit 1 ;; \
-    esac \
-    # Download Frigate binaries and verification assets
-    && wget --quiet https://github.com/sparrowwallet/frigate/releases/download/${FRIGATE_VERSION}/frigate-${FRIGATE_VERSION}-${FRIGATE_ARCH}.tar.gz \
-                    https://github.com/sparrowwallet/frigate/releases/download/${FRIGATE_VERSION}/frigate-${FRIGATE_VERSION}-manifest.txt \
-                    https://github.com/sparrowwallet/frigate/releases/download/${FRIGATE_VERSION}/frigate-${FRIGATE_VERSION}-manifest.txt.asc \
-                    https://keybase.io/craigraw/pgp_keys.asc \
-    # GPG verify, sha256sum verify, and unpack Frigate binaries
-    && gpg --import pgp_keys.asc \
-    && gpg --status-fd 1 --verify frigate-${FRIGATE_VERSION}-manifest.txt.asc \
-    | grep -q "GOODSIG ${PGP_SIG}" \
-    || exit 1 \
-    && sha256sum --check frigate-${FRIGATE_VERSION}-manifest.txt --ignore-missing || exit 1 \
-    && tar xf frigate-${FRIGATE_VERSION}-${FRIGATE_ARCH}.tar.gz -C /opt \
-    && rm -rf /tmp/*
+# Download, verify, and extract Frigate
+RUN if [ "${TARGETPLATFORM}" = "linux/arm64" ]; then \
+        ARCH="aarch64"; \
+    else \
+        ARCH="x86_64"; \
+    fi && \
+    wget \
+      https://github.com/sparrowwallet/frigate/releases/download/${FRIGATE_VERSION}/frigate-${FRIGATE_VERSION}-${ARCH}.tar.gz \
+      https://github.com/sparrowwallet/frigate/releases/download/${FRIGATE_VERSION}/frigate-${FRIGATE_VERSION}-manifest.txt \
+      https://github.com/sparrowwallet/frigate/releases/download/${FRIGATE_VERSION}/frigate-${FRIGATE_VERSION}-manifest.txt.asc \
+      https://keybase.io/craigraw/pgp_keys.asc && \
+    gpg --import pgp_keys.asc && \
+    gpg --status-fd 1 --verify frigate-${FRIGATE_VERSION}-manifest.txt.asc \
+      | grep -q "GOODSIG ${FRIGATE_PGP_SIG}" && \
+    sha256sum --check frigate-${FRIGATE_VERSION}-manifest.txt --ignore-missing && \
+    tar xf frigate-${FRIGATE_VERSION}-${ARCH}.tar.gz -C /opt && \
+    rm -rf /tmp/*
 
-# Setup frigate user and group with static IDs
-ARG GROUP_ID=1000
-ARG USER_ID=1000
-RUN userdel ubuntu \
-    && groupadd -g ${GROUP_ID} frigate \
-    && useradd -u ${USER_ID} -g frigate -d /frigate frigate
+# ---------- Runtime stage ----------
+FROM debian:trixie-slim
+
+ARG TARGETPLATFORM
+ARG USER_ID=1001
+ARG GROUP_ID=1001
+
+ARG INTEL_COMPUTE_RUNTIME_VERSION=26.18.38308.1
+ARG INTEL_IGC_VERSION=2.34.4+21428
+ARG INTEL_IGC_VERSION_SHORT=2.34.4
+
+# Base dependencies + OpenCL loader
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    ocl-icd-libopencl1 \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Intel OpenCL (amd64 only)
+RUN if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then \
+    wget -q \
+      "https://github.com/intel/intel-graphics-compiler/releases/download/v${INTEL_IGC_VERSION_SHORT}/intel-igc-core-2_${INTEL_IGC_VERSION}_amd64.deb" \
+      "https://github.com/intel/intel-graphics-compiler/releases/download/v${INTEL_IGC_VERSION_SHORT}/intel-igc-opencl-2_${INTEL_IGC_VERSION}_amd64.deb" \
+      "https://github.com/intel/compute-runtime/releases/download/${INTEL_COMPUTE_RUNTIME_VERSION}/libigdgmm12_22.10.0_amd64.deb" \
+      "https://github.com/intel/compute-runtime/releases/download/${INTEL_COMPUTE_RUNTIME_VERSION}/intel-opencl-icd_${INTEL_COMPUTE_RUNTIME_VERSION}-0_amd64.deb" && \
+    dpkg -i \
+      intel-igc-core-2_${INTEL_IGC_VERSION}_amd64.deb \
+      intel-igc-opencl-2_${INTEL_IGC_VERSION}_amd64.deb \
+      libigdgmm12_22.10.0_amd64.deb \
+      intel-opencl-icd_${INTEL_COMPUTE_RUNTIME_VERSION}-0_amd64.deb && \
+    rm -f *.deb && \
+    apt-get autoremove -y wget && \
+    apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*; \
+fi
+
+# Copy Frigate from builder
+COPY --from=builder /opt/frigate /opt/frigate
+
+# Create non-root user (configurable, default 1001)
+RUN groupadd -g ${GROUP_ID} frigate \
+    && useradd -u ${USER_ID} -g ${GROUP_ID} -m -d /frigate frigate
+
 USER frigate
-
-# Switch to home directory
 WORKDIR /frigate
 
-# Expose default TCP port
-EXPOSE 57001
+VOLUME /frigate/.frigate
 
-# Run Frigate
 CMD ["/opt/frigate/bin/frigate", "--dir /frigate/.frigate"]

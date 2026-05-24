@@ -169,7 +169,8 @@ services:
 
 Requirements:
 - NVIDIA driver installed
-- nvidia-container-toolkit installed
+- [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed - Verify with "nvidia-ctk --version"
+- Might need to restart docker after installing nvidia-container-toolkit
 
 ```yaml
 services:

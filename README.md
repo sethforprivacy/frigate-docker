@@ -31,7 +31,7 @@ port = 57001
 backendElectrumServer = "tcp://fulcrum:50001"
 ```
 
-Lastly, ensure that the data directory you specify has proper R/W permissions for the default UID/GID of `1001`.
+Lastly, ensure that the data directory you specify has proper R/W permissions for the default UID/GID of `1000`.
 
 ## Credit
 

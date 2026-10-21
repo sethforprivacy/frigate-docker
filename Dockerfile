@@ -9,12 +9,15 @@ ARG PGP_SIG=E94618334C674B40
 # Update all packages and install requirements
 RUN apt-get update \
     && apt-get upgrade -y
+# The rockcraft-built ubuntu:26.04 base ships Canonical's pebble service
+# manager outside of dpkg, so apt can never patch it; nothing here uses it,
+# so drop it rather than carry its Go stdlib CVEs past the Trivy gate
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends curl \
     gnupg \
     wget \
     ca-certificates \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /usr/bin/pebble /var/lib/pebble
 
 # Switch to /tmp for verification and install
 WORKDIR /tmp

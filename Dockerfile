@@ -59,7 +59,11 @@ EXPOSE 57001
 
 # Run Frigate
 # Frigate is an Electrum JSON-RPC server (no HTTP API); probe the TCP
-# listener on the documented [server] port (default/documented: 57001).
+# listener this image documents (tcp://0.0.0.0:57001 in the README's config;
+# Frigate's own default is 50001).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/57001'
 
-CMD ["/opt/frigate/bin/frigate", "--dir /frigate/.frigate"]
+# No arguments: Frigate's home defaults to ~/.frigate, which is
+# /frigate/.frigate for the frigate user. Frigate rejects unknown options
+# and exits, so any added argument must be split into separate tokens.
+CMD ["/opt/frigate/bin/frigate"]

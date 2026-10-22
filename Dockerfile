@@ -3,7 +3,7 @@ FROM ubuntu:26.04@sha256:2260313b31c8c011cd2eebe728008efac1b3982be73eb71348ea264
 
 # Set Frigate version and expected PGP signature
 # renovate: datasource=github-releases depName=sparrowwallet/frigate
-ARG FRIGATE_VERSION=1.5.3
+ARG FRIGATE_VERSION=1.6.1
 ARG PGP_SIG=E94618334C674B40
 
 # Update all packages and install requirements
